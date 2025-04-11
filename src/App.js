@@ -51,7 +51,7 @@ function RevisedAddress({ benchmarkId, userAddress, goBack }) {
   getRevisedAddr();
   if (fmtAddr !== "") {
     const gmapOpts = new URLSearchParams({q:fmtAddr, center:`${lon},${lat}`}).toString();
-    const gmapSrc = "https://www.google.com/maps/embed/v1/place?key=AIzaSyAyvWMWA82-To-mOGv_oacqD0osXq-Rqfo&" + gmapOpts;
+    const gmapSrc = "https://www.google.com/maps/embed/v1/place?key=" + gmapOpts; //please see our canvas site for the public api key
     return ( // here is what the component will render
       <div>
         <br/><br/>
