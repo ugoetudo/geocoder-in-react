@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+        <style>
+            body {
+              font-family: 'Roboto', sans-serif;
+              font-size: 18px;
+            }
+          </style>
+        <title>JS Lab 2 - Geocoding</title>
+
+    </head>
+    <body>
+        <h1>Find My Location</h1>
+        <p>Below, enter your full street address, including your city, state and zip code.</p>
+        <input id="addr" type="text", placeholder="Enter your full address" style="width: 250px; height: 30px;"/>
+        <br/>
+        <p>Choose a Census Bureau address data source:</p>
+        <select id="addressSources" style="width: 250px; height: 30px;">
+            <option>Loading...</option>
+        </select>
+        <input type="button", value="Submit" id="submitAddr" style="width: 80px; height: 30px; margin-left: 25px;"/>
+        <div id="infoContainer" style="margin-top: 10px;"></div>
+        <div id="mapContainer">
+            <iframe
+                id="gmap"
+                width="450"
+                height="250"
+                hidden
+                frameborder="0" style="border:0"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen>
+            </iframe>
+        </div>
+        <script type="text/javascript" >
+            let fetchSources = () => {
+                const opts = {method: "GET", headers: {"Origin": "https://www.vcu.edu"}}
+                bmr = new Request("https://geocoding.geo.census.gov/geocoder/benchmarks", opts);
+                fetch(bmr).then((res) => res.json()).then((jres) => {
+                    let opts = "";
+                    jres.benchmarks.forEach((bm) => {
+                        opts += `<option value=${bm.id}>${bm.benchmarkName}</option>`
+                    }) 
+                    document.getElementById("addressSources").innerHTML = opts});
+            }
+            let getGeo = () => {
+                const opts = {method: "GET", headers: {"Origin": "https://www.vcu.edu"}};
+                let gmap = document.getElementById("gmap");
+                let userAddr = document.getElementById("addr").value;
+                let bmSelections = document.getElementById("addressSources");
+                let selectedBm = bmSelections.selectedOptions[0].value;
+                let rUrl = "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?";
+                let rParams = new URLSearchParams({address:userAddr, benchmark:selectedBm, format:"json"}).toString();
+                let bmr = new Request(rUrl+rParams, opts)
+                fetch(bmr).then((result) => {
+                    return result.json();
+                }).then((jsonResult) => {
+                        let infoContainer = document.getElementById("infoContainer");
+                        let lat = jsonResult.result.addressMatches[0].coordinates.x;
+                        let lon = jsonResult.result.addressMatches[0].coordinates.y;
+                        let matchedAddr = jsonResult.result.addressMatches[0].matchedAddress;
+                        let htmlOut = `<p>Matched Address: ${matchedAddr} </p><p>Latitude: ${lat} Longitude: ${lon}`;
+                        infoContainer.innerHTML = htmlOut;
+                        if (gmap.hasAttribute("hidden"))
+                            gmap.toggleAttribute("hidden");
+                        gmapOpts = new URLSearchParams({q:matchedAddr, center:`${lon},${lat}`}).toString();
+                        gmap.setAttribute("src", 
+                                          "https://www.google.com/maps/embed/v1/place?key=AIzaSyAyvWMWA82-To-mOGv_oacqD0osXq-Rqfo&" + gmapOpts);
+                        let clearButton = document.createElement("button")
+                        clearButton.textContent = "clear";
+                        let clearResults = () => {
+                            if (!gmap.hasAttribute("hidden"))
+                                gmap.toggleAttribute("hidden");
+                            if (infoContainer.innerHTML)
+                                infoContainer.innerHTML = '';
+                        } 
+                        clearButton.onclick = clearResults
+                        infoContainer.insertBefore(clearButton, infoContainer.querySelector('p'));
+                    })
+            }
+            window.onload = fetchSources;
+            document.getElementById("submitAddr").onclick = getGeo;
+        </script>
+    </body>
+</html>
