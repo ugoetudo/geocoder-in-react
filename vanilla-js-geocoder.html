@@ -65,7 +65,7 @@
                             gmap.toggleAttribute("hidden");
                         gmapOpts = new URLSearchParams({q:matchedAddr, center:`${lon},${lat}`}).toString();
                         gmap.setAttribute("src", 
-                                          "https://www.google.com/maps/embed/v1/place?key=AIzaSyAyvWMWA82-To-mOGv_oacqD0osXq-Rqfo&" + gmapOpts);
+                                          "https://www.google.com/maps/embed/v1/place?key=" + gmapOpts);
                         let clearButton = document.createElement("button")
                         clearButton.textContent = "clear";
                         let clearResults = () => {
